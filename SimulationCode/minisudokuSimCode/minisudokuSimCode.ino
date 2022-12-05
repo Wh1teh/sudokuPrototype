@@ -2,7 +2,8 @@
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 
-
+extern volatile unsigned long timer0_millis;
+unsigned long new_value = 0;
 unsigned long myTime;
 const char chars[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','.',',','1','2','3','4','5','6','7','8','9','0'};//add any additional characters
 
@@ -83,6 +84,12 @@ void setup() {
 
 void loop() {
 
+  Serial.print("Time: ");
+  myTime =  millis()/1000;
+
+  Serial.println(myTime);
+  delay(1000);
+	
   if (buttonPress() != 0) {
     gameCursor();
     lcd.setCursor(cursorX, cursorY);
@@ -401,7 +408,14 @@ void gameVictory(void)
   lcd.begin(16,2);
   lcd.print("YOU WON!");
   lcd.setCursor(2,4);
-  delay(1000);
+  
+  lcd.print("TIME:");
+  lcd.setCursor(9,6);
+  lcd.print(myTime);
+  lcd.setCursor(12,6);
+  lcd.print("SEC");
+  delay(10000);
+ 
   lcd.clear();
   lcd.print("GIVE PLAYER NAME");
   delay(1000);   
@@ -535,7 +549,7 @@ void gameVictory(void)
 
 void gameReset(void) {
 lcd.clear();
-
+setMillis(new_value);
   //fill array with zeros
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -552,4 +566,10 @@ lcd.clear();
   }
 
   setup();
+}
+void setMillis(unsigned long new_millis){
+  uint8_t oldSREG = SREG;
+  cli();
+  timer0_millis = new_millis;
+  SREG = oldSREG;
 }
