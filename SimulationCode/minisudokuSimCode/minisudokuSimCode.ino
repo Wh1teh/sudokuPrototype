@@ -1,5 +1,7 @@
 #include <Adafruit_LiquidCrystal.h>
 
+extern volatile unsigned long timer0_millis;
+unsigned long new_value = 0;
 unsigned long myTime;
 
 const int keyUp = 2;
@@ -71,6 +73,12 @@ void setup() {
 
 void loop() {
 
+  Serial.print("Time: ");
+  myTime =  millis()/1000;
+
+  Serial.println(myTime); // prints time since program started
+  delay(1000);          // wait a second so as not to send massive amounts of data  
+  
   if (buttonPress() != 0) {
     gameCursor();
     lcd.setCursor(cursorX, cursorY);
@@ -393,6 +401,7 @@ void gameVictory(void) {
   lcd.print("YOU");
   lcd.setCursor(5, 1);
   lcd.print("WON");
+  //lcd.print(myTime);
   lcd.setCursor(cursorX, cursorY);
 
   for (int i = 0; i < 10; i++) {
@@ -405,7 +414,7 @@ void gameVictory(void) {
 
 void gameReset(void) {
   lcd.clear();
-
+  setMillis(new_value);
   //fill array with zeros
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -422,4 +431,10 @@ void gameReset(void) {
   }
 
   setup();
+}
+void setMillis(unsigned long new_millis){
+  uint8_t oldSREG = SREG;
+  cli();
+  timer0_millis = new_millis;
+  SREG = oldSREG;
 }
